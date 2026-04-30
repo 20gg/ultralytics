@@ -145,6 +145,25 @@ class Detect(nn.Module):
             for i in range(self.nl):
                 z.append(torch.cat((box_head[i](x[i]), cls_head[i](x[i]).sigmoid()), 1))
             return z
+
+        # ==================== 你修改的 RKNN 针对新增了p2头 导出部分 ====================
+        # if self.export and self.format == "rknn":  # for RKNN export
+        #     z = []
+        #     proj = torch.arange(self.reg_max, dtype=torch.float, device=x[0].device)
+        #     proj = proj.view(1, 1, self.reg_max, 1, 1)
+
+        #     for i in range(self.nl):
+        #         box = box_head[i](x[i])
+        #         b, _, h, w = box.shape
+        #         box = box.view(b, 4, self.reg_max, h, w)
+        #         box = box.softmax(dim=2)
+        #         box = (box * proj).sum(dim=2)
+
+        #         cls = cls_head[i](x[i]).sigmoid()
+        #         z.append(torch.cat((box, cls), dim=1))
+                
+        #     return z
+        # ================================================================
         
         boxes = torch.cat([box_head[i](x[i]).view(bs, 4 * self.reg_max, -1) for i in range(self.nl)], dim=-1)
         scores = torch.cat([cls_head[i](x[i]).view(bs, self.nc, -1) for i in range(self.nl)], dim=-1)
